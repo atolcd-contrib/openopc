@@ -12,7 +12,6 @@
 import os
 import sys
 import time
-import types
 import string
 import socket
 import re
@@ -356,7 +355,6 @@ class client():
                 pass
 
             valid_tags = []
-            valid_values = []
             client_handles = []
 
             if sub_group not in self._group_handles_tag:
@@ -426,7 +424,8 @@ class client():
                 errors = opc_items.Remove(
                     len(server_handles) - 1, server_handles)
             except pythoncom.com_error as err:
-                error_msg = 'RemoveItems: %s' % self._get_error_str(err)
+                error_msg = 'RemoveItems: %s\n%s' % (
+                    self._get_error_str(err), errors)
                 raise OPCError(error_msg)
 
         try:
@@ -461,8 +460,6 @@ class client():
 
                 num_groups = len(tag_groups)
                 data_source = SOURCE_DEVICE
-
-            results = []
 
             for gid in range(num_groups):
                 if gid > 0 and pause > 0:
@@ -990,11 +987,6 @@ class client():
 
             if type(groups) in (str, bytes):
                 groups = [groups]
-                single = True
-            else:
-                single = False
-
-            status = []
 
             for group in groups:
                 if group in self._groups:
@@ -1009,7 +1001,7 @@ class client():
                         try:
                             if self.trace:
                                 self.trace('RemoveGroup(%s)' % sub_group)
-                            errors = opc_groups.Remove(sub_group)
+                            errors = opc_groups.Remove(sub_group)  # noqa
                         except pythoncom.com_error as err:
                             error_msg = (
                                 'RemoveGroup: %s' % self._get_error_str(err))
@@ -1058,8 +1050,6 @@ class client():
                     descriptions.append('Property id %d' % i)
             else:
                 single_property = False
-
-            properties = []
 
             for tag in tags:
 
@@ -1187,6 +1177,7 @@ class client():
                     pattern = re.compile(
                         '^%s$' % wild2regex(path), re.IGNORECASE)
                     matches = filter(pattern.search, browser)
+                    node_type = ''
                     if include_type:
                         matches = [(x, node_type) for x in matches]
 
@@ -1362,13 +1353,13 @@ class client():
             scode = exc[5]
 
             try:
-                opc_err_str = unicode(
+                opc_err_str = str(
                     self._opc.GetErrorString(scode)).strip('\r\n')
             except BaseException:
                 opc_err_str = None
 
             try:
-                com_err_str = unicode(
+                com_err_str = str(
                     pythoncom.GetScodeString(scode)).strip('\r\n')
             except BaseException:
                 com_err_str = None
