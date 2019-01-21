@@ -126,7 +126,8 @@ def tags2trace(tags):
     """
     arg_str = ''
     for i, t in enumerate(tags[1:]):
-        if i > 0: arg_str += ','
+        if i > 0:
+            arg_str += ','
         arg_str += '%s' % t
     return arg_str
 
@@ -147,7 +148,8 @@ def exceptional(
                     return catch(sys.exc_info(), lambda: func(*args, **kwargs))
                 raise
         finally:
-            if final: final()
+            if final:
+                final()
     return _exceptional
 
 
@@ -262,7 +264,8 @@ class client():
 
         for s in opc_server_list:
             try:
-                if self.trace: self.trace('Connect(%s,%s)' % (s, opc_host))
+                if self.trace:
+                    self.trace('Connect(%s,%s)' % (s, opc_host))
                 self._opc.Connect(s, opc_host)
             except pythoncom.com_error as err:
                 if len(opc_server_list) == 1:
@@ -324,7 +327,8 @@ class client():
             pass
 
         finally:
-            if self.trace: self.trace('Disconnect()')
+            if self.trace:
+                self.trace('Disconnect()')
             self._opc.Disconnect()
 
             # Remove this object from the open gateway service
@@ -343,7 +347,8 @@ class client():
             names.insert(0, 0)
             errors = []
 
-            if self.trace: self.trace('Validate(%s)' % tags2trace(names))
+            if self.trace:
+                self.trace('Validate(%s)' % tags2trace(names))
 
             try:
                 errors = opc_items.Validate(len(names) - 1, names)
@@ -379,7 +384,8 @@ class client():
             server_handles = []
             errors = []
 
-            if self.trace: self.trace('AddItems(%s)' % tags2trace(valid_tags))
+            if self.trace:
+                self.trace('AddItems(%s)' % tags2trace(valid_tags))
 
             try:
                 server_handles, errors = opc_items.AddItems(
@@ -459,7 +465,8 @@ class client():
             results = []
 
             for gid in range(num_groups):
-                if gid > 0 and pause > 0: time.sleep(pause / 1000.0)
+                if gid > 0 and pause > 0:
+                    time.sleep(pause / 1000.0)
 
                 error_msgs = {}
                 opc_groups = self._opc.OPCGroups
@@ -468,7 +475,8 @@ class client():
                 # Anonymous group
                 if group == None:
                     try:
-                        if self.trace: self.trace('AddGroup()')
+                        if self.trace:
+                            self.trace('AddGroup()')
                         opc_group = opc_groups.Add()
                     except pythoncom.com_error as err:
                         error_msg = 'AddGroup: %s' % self._get_error_str(err)
@@ -539,7 +547,8 @@ class client():
                     self._group_tags[sub_group] = tags
                     self._group_valid_tags[sub_group] = valid_tags
 
-                    if source == 'hybrid': data_source = SOURCE_DEVICE
+                    if source == 'hybrid':
+                        data_source = SOURCE_DEVICE
 
                 # Existing group
                 else:
@@ -568,7 +577,8 @@ class client():
                             data_source = SOURCE_CACHE\
                                 if source == 'cache' else SOURCE_DEVICE
 
-                        if self.trace: self.trace('SyncRead(%s)' % data_source)
+                        if self.trace:
+                            self.trace('SyncRead(%s)' % data_source)
 
                         try:
                             values, errors, qualities, timestamps =\
@@ -728,13 +738,20 @@ class client():
         results = []
 
         for t in tags:
-            if t == '@MemFree':        value = SystemHealth.mem_free()
-            elif t == '@MemUsed':        value = SystemHealth.mem_used()
-            elif t == '@MemTotal':      value = SystemHealth.mem_total()
-            elif t == '@MemPercent':    value = SystemHealth.mem_percent()
-            elif t == '@DiskFree':      value = SystemHealth.disk_free()
-            elif t == '@SineWave':      value = SystemHealth.sine_wave()
-            elif t == '@SawWave':        value = SystemHealth.saw_wave()
+            if t == '@MemFree':
+                value = SystemHealth.mem_free()
+            elif t == '@MemUsed':
+                value = SystemHealth.mem_used()
+            elif t == '@MemTotal':
+                value = SystemHealth.mem_total()
+            elif t == '@MemPercent':
+                value = SystemHealth.mem_percent()
+            elif t == '@DiskFree':
+                value = SystemHealth.disk_free()
+            elif t == '@SineWave':
+                value = SystemHealth.sine_wave()
+            elif t == '@SawWave':
+                value = SystemHealth.saw_wave()
 
             elif t == '@CpuUsage':
                 if self.cpu == None:
@@ -830,7 +847,8 @@ class client():
             status = []
 
             for gid in range(num_groups):
-                if gid > 0 and pause > 0: time.sleep(pause / 1000.0)
+                if gid > 0 and pause > 0:
+                    time.sleep(pause / 1000.0)
 
                 opc_groups = self._opc.OPCGroups
                 opc_group = opc_groups.Add()
@@ -1102,12 +1120,14 @@ class client():
                     tag_properties.insert(
                         0, (0, 'Item ID (virtual property)', tag))
 
-                if include_name:     tag_properties.insert(0, (0, tag))
+                if include_name:
+                    tag_properties.insert(0, (0, tag))
                 if not single_tag:
                     tag_properties = [
                         tuple([tag] + list(p)) for p in tag_properties]
 
-                for p in tag_properties: yield p
+                for p in tag_properties:
+                    yield p
 
         except pythoncom.com_error as err:
             error_msg = 'properties: %s' % self._get_error_str(err)
@@ -1153,7 +1173,8 @@ class client():
                     "list(): 'paths' parameter must be a string or"
                     " a list of strings")
 
-            if len(paths) == 0: paths = ['*']
+            if len(paths) == 0:
+                paths = ['*']
             nodes = {}
 
             for path in paths:
@@ -1169,7 +1190,8 @@ class client():
                     if include_type:
                         matches = [(x, node_type) for x in matches]
 
-                    for node in matches: yield node
+                    for node in matches:
+                        yield node
                     continue
 
                 queue = []
@@ -1205,7 +1227,8 @@ class client():
                                     browser.MoveDown(p)
                                     path_str += p + '/'
                                 except:
-                                    if i < len(path_list) - 1: return
+                                    if i < len(path_list) - 1:
+                                        return
                                     pattern = re.compile(
                                         '^%s$' % wild2regex(p), re.IGNORECASE)
 
@@ -1239,7 +1262,8 @@ class client():
                         if include_type:
                             matches = [(x, node_type) for x in matches]
                         for node in matches:
-                            if not node in nodes: yield node
+                            if not node in nodes:
+                                yield node
                             nodes[node] = True
 
         except pythoncom.com_error as err:
