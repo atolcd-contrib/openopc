@@ -35,7 +35,9 @@ if os.name == 'nt':
 
         # Win32 variant types
         pywintypes.datetime = pywintypes.TimeType
-        vt = dict([(pythoncom.__dict__[vtype], vtype) for vtype in pythoncom.__dict__.keys() if vtype[:2] == "VT"])
+        vt = dict([(pythoncom.__dict__[vtype], vtype)
+                   for vtype in pythoncom.__dict__.keys()
+                   if vtype[:2] == "VT"])
 
         # Allow gencache to create the cached wrapper objects
         win32com.client.gencache.is_readonly = False
@@ -44,7 +46,8 @@ if os.name == 'nt':
         # so we use Rebuild() to force the creation of the gen_py folder
         win32com.client.gencache.Rebuild(verbose=0)
 
-    # So we can work on Windows in "open" protocol mode without the need for the win32com modules
+    # So we can work on Windows in "open" protocol mode without the need for
+    # the win32com modules
     except ImportError:
         win32com_found = False
     else:
@@ -60,8 +63,26 @@ OPC_STATUS = (0, 'Running', 'Failed', 'NoConfig', 'Suspended', 'Test')
 BROWSER_TYPE = (0, 'Hierarchical', 'Flat')
 ACCESS_RIGHTS = (0, 'Read', 'Write', 'Read/Write')
 OPC_QUALITY = ('Bad', 'Uncertain', 'Unknown', 'Good')
-OPC_CLASS = 'Matrikon.OPC.Automation;Graybox.OPC.DAWrapper;HSCOPC.Automation;RSI.OPCAutomation;OPC.Automation'
-OPC_SERVER = 'Hci.TPNServer;HwHsc.OPCServer;opc.deltav.1;AIM.OPC.1;Yokogawa.ExaopcDAEXQ.1;OSI.DA.1;OPC.PHDServerDA.1;Aspen.Infoplus21_DA.1;National Instruments.OPCLabVIEW;RSLinx OPC Server;KEPware.KEPServerEx.V4;Matrikon.OPC.Simulation;Prosys.OPC.Simulation;CCOPC.XMLWrapper.1;OPC.SimaticHMI.CoRtHmiRTm.1'
+OPC_CLASS = 'Matrikon.OPC.Automation;' \
+            'Graybox.OPC.DAWrapper;' \
+            'HSCOPC.Automation;' \
+            'RSI.OPCAutomation;' \
+            'OPC.Automation'
+OPC_SERVER = 'Hci.TPNServer;' \
+            'HwHsc.OPCServer;' \
+            'opc.deltav.1;' \
+            'AIM.OPC.1;' \
+            'Yokogawa.ExaopcDAEXQ.1;' \
+            'OSI.DA.1;' \
+            'OPC.PHDServerDA.1;' \
+            'Aspen.Infoplus21_DA.1;' \
+            'National Instruments.OPCLabVIEW;' \
+            'RSLinx OPC Server;' \
+            'KEPware.KEPServerEx.V4;' \
+            'Matrikon.OPC.Simulation;' \
+            'Prosys.OPC.Simulation;' \
+            'CCOPC.XMLWrapper.1;' \
+            'OPC.SimaticHMI.CoRtHmiRTm.1'
 OPC_CLIENT = 'OpenOPC'
 
 
@@ -94,11 +115,15 @@ def type_check(tags):
 
 def wild2regex(string):
     """Convert a Unix wildcard glob into a regular expression"""
-    return string.replace('.', '\.').replace('*', '.*').replace('?', '.').replace('!', '^')
+    return string.replace('.', '\.').replace(
+        '*', '.*').replace('?', '.').replace('!', '^')
 
 
 def tags2trace(tags):
-    """Convert a list tags into a formatted string suitable for the trace callback log"""
+    """
+    Convert a list tags into a formatted string
+    suitable for the trace callback log
+    """
     arg_str = ''
     for i, t in enumerate(tags[1:]):
         if i > 0: arg_str += ','
@@ -106,7 +131,9 @@ def tags2trace(tags):
     return arg_str
 
 
-def exceptional(func, alt_return=None, alt_exceptions=(Exception,), final=None, catch=None):
+def exceptional(
+        func, alt_return=None, alt_exceptions=(Exception,),
+        final=None, catch=None):
     """Turns exceptions into an alternative return value"""
 
     def _exceptional(*args, **kwargs):
@@ -116,7 +143,8 @@ def exceptional(func, alt_return=None, alt_exceptions=(Exception,), final=None, 
             except alt_exceptions:
                 return alt_return
             except:
-                if catch: return catch(sys.exc_info(), lambda: func(*args, **kwargs))
+                if catch:
+                    return catch(sys.exc_info(), lambda: func(*args, **kwargs))
                 raise
         finally:
             if final: final()
@@ -153,8 +181,11 @@ class GroupEvents:
     def __init__(self):
         self.client = current_client
 
-    def OnDataChange(self, TransactionID, NumItems, ClientHandles, ItemValues, Qualities, TimeStamps):
-        self.client.callback_queue.put((TransactionID, ClientHandles, ItemValues, Qualities, TimeStamps))
+    def OnDataChange(
+            self, TransactionID, NumItems, ClientHandles, ItemValues,
+            Qualities, TimeStamps):
+        self.client.callback_queue.put(
+            (TransactionID, ClientHandles, ItemValues, Qualities, TimeStamps))
 
 
 @Pyro4.expose     # needed for 4.55
@@ -253,7 +284,9 @@ class client():
                 break
 
         if not connected:
-            raise OPCError('Connect: Cannot connect to any of the servers in the OPC_SERVER list')
+            raise OPCError(
+                'Connect: Cannot connect to any of the servers'
+                ' in the OPC_SERVER list')
 
         # With some OPC servers, the next OPC call immediately after Connect()
         # will occationally fail.  Sleeping for 1/100 second seems to fix this.
@@ -264,8 +297,8 @@ class client():
             opc_host = socket.gethostname()
         self.opc_host = opc_host
 
-        # On reconnect we need to remove the old group names from OpenOPC's internal
-        # cache since they are now invalid
+        # On reconnect we need to remove the old group names
+        # from OpenOPC's internal cache since they are now invalid
         self._groups = {}
         self._group_tags = {}
         self._group_valid_tags = {}
@@ -298,7 +331,10 @@ class client():
             if self._open_serv and del_object:
                 self._open_serv.release_client(self._open_self)
 
-    def iread(self, tags=None, group=None, size=None, pause=0, source='hybrid', update=-1, timeout=5000, sync=False, include_error=False, rebuild=False):
+    def iread(
+            self, tags=None, group=None, size=None, pause=0,
+            source='hybrid', update=-1, timeout=5000, sync=False,
+            include_error=False, rebuild=False):
         """Iterable version of read()"""
 
         def add_items(tags):
@@ -335,7 +371,8 @@ class client():
                 elif include_error:
                     error_msgs[tag] = self._opc.GetErrorString(errors[i])
 
-                if self.trace and errors[i] != 0: self.trace('%s failed validation' % tag)
+                if self.trace and errors[i] != 0:
+                    self.trace('%s failed validation' % tag)
 
             client_handles.insert(0, 0)
             valid_tags.insert(0, 0)
@@ -345,7 +382,8 @@ class client():
             if self.trace: self.trace('AddItems(%s)' % tags2trace(valid_tags))
 
             try:
-                server_handles, errors = opc_items.AddItems(len(client_handles) - 1, valid_tags, client_handles)
+                server_handles, errors = opc_items.AddItems(
+                    len(client_handles) - 1, valid_tags, client_handles)
             except:
                 pass
 
@@ -360,7 +398,8 @@ class client():
                 if errors[i] == 0:
                     valid_tags_tmp.append(tag)
                     server_handles_tmp.append(server_handles[i])
-                    self._group_server_handles[sub_group][tag] = server_handles[i]
+                    self._group_server_handles[
+                        sub_group][tag] = server_handles[i]
                 elif include_error:
                     error_msgs[tag] = self._opc.GetErrorString(errors[i])
 
@@ -370,13 +409,16 @@ class client():
             return valid_tags, server_handles
 
         def remove_items(tags):
-            if self.trace: self.trace('RemoveItems(%s)' % tags2trace([''] + tags))
-            server_handles = [self._group_server_handles[sub_group][tag] for tag in tags]
+            if self.trace:
+                self.trace('RemoveItems(%s)' % tags2trace([''] + tags))
+            server_handles = [
+                self._group_server_handles[sub_group][tag] for tag in tags]
             server_handles.insert(0, 0)
             errors = []
 
             try:
-                errors = opc_items.Remove(len(server_handles) - 1, server_handles)
+                errors = opc_items.Remove(
+                    len(server_handles) - 1, server_handles)
             except pythoncom.com_error as err:
                 error_msg = 'RemoveItems: %s' % self._get_error_str(err)
                 raise OPCError(error_msg)
@@ -393,7 +435,9 @@ class client():
 
             tags, single, valid = type_check(tags)
             if not valid:
-                raise TypeError("iread(): 'tags' parameter must be a string or a list of strings")
+                raise TypeError(
+                    "iread(): 'tags' parameter must be a string"
+                    " or a list of strings")
 
             # Group exists
             if group in self._groups and not rebuild:
@@ -404,7 +448,8 @@ class client():
             else:
                 if size:
                     # Break-up tags into groups of 'size' tags
-                    tag_groups = [tags[i:i + size] for i in range(0, len(tags), size)]
+                    tag_groups = [
+                        tags[i:i + size] for i in range(0, len(tags), size)]
                 else:
                     tag_groups = [tags]
 
@@ -435,17 +480,20 @@ class client():
 
                     # Existing named group
                     try:
-                        if self.trace: self.trace('GetOPCGroup(%s)' % sub_group)
+                        if self.trace:
+                            self.trace('GetOPCGroup(%s)' % sub_group)
                         opc_group = opc_groups.GetOPCGroup(sub_group)
                         new_group = False
 
                     # New named group
                     except:
                         try:
-                            if self.trace: self.trace('AddGroup(%s)' % sub_group)
+                            if self.trace:
+                                self.trace('AddGroup(%s)' % sub_group)
                             opc_group = opc_groups.Add(sub_group)
                         except pythoncom.com_error as err:
-                            error_msg = 'AddGroup: %s' % self._get_error_str(err)
+                            error_msg = 'AddGroup: %s' % self._get_error_str(
+                                err)
                             raise OPCError(error_msg)
                         self._groups[str(group)] = len(tag_groups)
                         new_group = True
@@ -456,10 +504,12 @@ class client():
                     opc_group.IsSubscribed = 1
                     opc_group.IsActive = 1
                     if not sync:
-                        if self.trace: self.trace('WithEvents(%s)' % opc_group.Name)
+                        if self.trace:
+                            self.trace('WithEvents(%s)' % opc_group.Name)
                         global current_client
                         current_client = self
-                        self._group_hooks[opc_group.Name] = win32com.client.WithEvents(opc_group, GroupEvents)
+                        self._group_hooks[opc_group.Name] =\
+                            win32com.client.WithEvents(opc_group, GroupEvents)
 
                     tags = tag_groups[gid]
 
@@ -478,11 +528,13 @@ class client():
 
                     if len(add_tags) > 0:
                         valid_tags, server_handles = add_items(add_tags)
-                        valid_tags = self._group_valid_tags[sub_group] + valid_tags
+                        valid_tags = self._group_valid_tags[
+                            sub_group] + valid_tags
 
                     if len(del_tags) > 0:
                         remove_items(del_tags)
-                        valid_tags = [t for t in valid_tags if t not in del_tags]
+                        valid_tags = [
+                            t for t in valid_tags if t not in del_tags]
 
                     self._group_tags[sub_group] = tags
                     self._group_valid_tags[sub_group] = valid_tags
@@ -494,7 +546,8 @@ class client():
                     tags = self._group_tags[sub_group]
                     valid_tags = self._group_valid_tags[sub_group]
                     if sync:
-                        server_handles = [item.ServerHandle for item in opc_items]
+                        server_handles = [
+                            item.ServerHandle for item in opc_items]
 
                 tag_value = {}
                 tag_quality = {}
@@ -512,14 +565,19 @@ class client():
                         server_handles.insert(0, 0)
 
                         if source != 'hybrid':
-                            data_source = SOURCE_CACHE if source == 'cache' else SOURCE_DEVICE
+                            data_source = SOURCE_CACHE\
+                                if source == 'cache' else SOURCE_DEVICE
 
                         if self.trace: self.trace('SyncRead(%s)' % data_source)
 
                         try:
-                            values, errors, qualities, timestamps = opc_group.SyncRead(data_source, len(server_handles) - 1, server_handles)
+                            values, errors, qualities, timestamps =\
+                                opc_group.SyncRead(
+                                    data_source,
+                                    len(server_handles) - 1, server_handles)
                         except pythoncom.com_error as err:
-                            error_msg = 'SyncRead: %s' % self._get_error_str(err)
+                            error_msg = 'SyncRead: %s' % self._get_error_str(
+                                err)
                             raise OPCError(error_msg)
 
                         for i, tag in enumerate(valid_tags):
@@ -536,14 +594,17 @@ class client():
                         self._tx_id += 1
 
                         if source != 'hybrid':
-                            data_source = SOURCE_CACHE if source == 'cache' else SOURCE_DEVICE
+                            data_source = SOURCE_CACHE\
+                                if source == 'cache' else SOURCE_DEVICE
 
-                        if self.trace: self.trace('AsyncRefresh(%s)' % data_source)
+                        if self.trace:
+                            self.trace('AsyncRefresh(%s)' % data_source)
 
                         try:
                             opc_group.AsyncRefresh(data_source, self._tx_id)
                         except pythoncom.com_error as err:
-                            error_msg = 'AsyncRefresh: %s' % self._get_error_str(err)
+                            error_msg = (
+                                'AsyncRefresh: %s' % self._get_error_str(err))
                             raise OPCError(error_msg)
 
                         tx_id = 0
@@ -552,12 +613,13 @@ class client():
                         while tx_id != self._tx_id:
                             now = time.time() * 1000
                             if now - start > timeout:
-                                raise TimeoutError('Callback: Timeout waiting for data')
+                                raise TimeoutError(
+                                    'Callback: Timeout waiting for data')
 
                             if self.callback_queue.empty():
                                 pythoncom.PumpWaitingMessages()
                             else:
-                                tx_id, handles, values, qualities, timestamps = self.callback_queue.get()
+                                tx_id, handles, values, qualities, timestamps = self.callback_queue.get()  # noqa
 
                         for i, h in enumerate(handles):
                             tag = self._group_handles_tag[sub_group][h]
@@ -567,7 +629,9 @@ class client():
 
                 for tag in tags:
                     if tag in tag_value:
-                        if (not sync and len(valid_tags) > 0) or (sync and tag_error[tag] == 0):
+                        if (
+                            not sync and len(valid_tags) > 0) or (
+                                sync and tag_error[tag] == 0):
                             value = tag_value[tag]
                             if type(value) == pywintypes.TimeType:
                                 value = str(value)
@@ -578,7 +642,8 @@ class client():
                             quality = 'Error'
                             timestamp = None
                         if include_error:
-                            error_msgs[tag] = self._opc.GetErrorString(tag_error[tag]).strip('\r\n')
+                            error_msgs[tag] = self._opc.GetErrorString(
+                                tag_error[tag]).strip('\r\n')
                     else:
                         value = None
                         quality = 'Error'
@@ -593,43 +658,60 @@ class client():
                             yield (value, quality, timestamp)
                     else:
                         if include_error:
-                            yield (tag, value, quality, timestamp, error_msgs[tag])
+                            yield (
+                                tag, value, quality, timestamp,
+                                error_msgs[tag])
                         else:
                             yield (tag, value, quality, timestamp)
 
                 if group == None:
                     try:
                         if not sync and opc_group.Name in self._group_hooks:
-                            if self.trace: self.trace('CloseEvents(%s)' % opc_group.Name)
+                            if self.trace:
+                                self.trace('CloseEvents(%s)' % opc_group.Name)
                             self._group_hooks[opc_group.Name].close()
 
-                        if self.trace: self.trace('RemoveGroup(%s)' % opc_group.Name)
+                        if self.trace:
+                            self.trace('RemoveGroup(%s)' % opc_group.Name)
                         opc_groups.Remove(opc_group.Name)
 
                     except pythoncom.com_error as err:
-                        error_msg = 'RemoveGroup: %s' % self._get_error_str(err)
+                        error_msg = 'RemoveGroup: %s' % self._get_error_str(
+                            err)
                         raise OPCError(error_msg)
 
         except pythoncom.com_error as err:
             error_msg = 'read: %s' % self._get_error_str(err)
             raise OPCError(error_msg)
 
-    def read(self, tags=None, group=None, size=None, pause=0, source='hybrid', update=-1, timeout=5000, sync=False, include_error=False, rebuild=False):
-        """Return list of (value, quality, time) tuples for the specified tag(s)"""
+    def read(
+            self, tags=None, group=None, size=None, pause=0,
+            source='hybrid', update=-1, timeout=5000, sync=False,
+            include_error=False, rebuild=False):
+        """
+        Return list of (value, quality, time) tuples
+        for the specified tag(s)
+        """
 
         tags_list, single, valid = type_check(tags)
         if not valid:
-            raise TypeError("read(): 'tags' parameter must be a string or a list of strings")
+            raise TypeError(
+                "read(): 'tags' parameter must be a string"
+                " or a list of strings")
 
         num_health_tags = len([t for t in tags_list if t[:1] == '@'])
         num_opc_tags = len([t for t in tags_list if t[:1] != '@'])
 
         if num_health_tags > 0:
             if num_opc_tags > 0:
-                raise TypeError("read(): system health and OPC tags cannot be included in the same group")
+                raise TypeError(
+                    "read(): system health and OPC tags"
+                    " cannot be included in the same group")
             results = self._read_health(tags)
         else:
-            results = self.iread(tags, group, size, pause, source, update, timeout, sync, include_error, rebuild)
+            results = self.iread(
+                tags, group, size, pause, source, update, timeout, sync,
+                include_error, rebuild)
 
         if single:
             return list(results)[0]
@@ -698,13 +780,18 @@ class client():
             pythoncom.CoInitialize()
 
             def _valid_pair(p):
-                if type(p) in (list, tuple) and len(p) >= 2 and type(p[0]) in (str, bytes):
+                if (
+                        type(p) in (list, tuple) and
+                        len(p) >= 2 and
+                        type(p[0]) in (str, bytes)):
                     return True
                 else:
                     return False
 
             if type(tag_value_pairs) not in (list, tuple):
-                raise TypeError("write(): 'tag_value_pairs' parameter must be a (tag, value) tuple or a list of (tag,value) tuples")
+                raise TypeError(
+                    "write(): 'tag_value_pairs' parameter must be a"
+                    " (tag, value) tuple or a list of (tag,value) tuples")
 
             if tag_value_pairs == None:
                 tag_value_pairs = ['']
@@ -717,7 +804,9 @@ class client():
 
             invalid_pairs = [p for p in tag_value_pairs if not _valid_pair(p)]
             if len(invalid_pairs) > 0:
-                raise TypeError("write(): 'tag_value_pairs' parameter must be a (tag, value) tuple or a list of (tag,value) tuples")
+                raise TypeError(
+                    "write(): 'tag_value_pairs' parameter must be a"
+                    " (tag, value) tuple or a list of (tag,value) tuples")
 
             names = [tag[0] for tag in tag_value_pairs]
             tags = [tag[0] for tag in tag_value_pairs]
@@ -725,9 +814,12 @@ class client():
 
             # Break-up tags & values into groups of 'size' tags
             if size:
-                name_groups = [names[i:i + size] for i in range(0, len(names), size)]
-                tag_groups = [tags[i:i + size] for i in range(0, len(tags), size)]
-                value_groups = [values[i:i + size] for i in range(0, len(values), size)]
+                name_groups = [
+                    names[i:i + size] for i in range(0, len(names), size)]
+                tag_groups = [
+                    tags[i:i + size] for i in range(0, len(tags), size)]
+                value_groups = [
+                    values[i:i + size] for i in range(0, len(values), size)]
             else:
                 name_groups = [names]
                 tag_groups = [tags]
@@ -778,7 +870,8 @@ class client():
                 errors = []
 
                 try:
-                    server_handles, errors = opc_items.AddItems(len(client_handles) - 1, valid_tags, client_handles)
+                    server_handles, errors = opc_items.AddItems(
+                        len(client_handles) - 1, valid_tags, client_handles)
                 except:
                     pass
 
@@ -806,7 +899,9 @@ class client():
 
                 if len(valid_values) > 1:
                     try:
-                        errors = opc_group.SyncWrite(len(server_handles) - 1, server_handles, valid_values)
+                        errors = opc_group.SyncWrite(
+                            len(server_handles) - 1, server_handles,
+                            valid_values)
                     except:
                         pass
 
@@ -817,14 +912,18 @@ class client():
                             status = 'Success'
                         else:
                             status = 'Error'
-                        if include_error:  error_msgs[tag] = self._opc.GetErrorString(errors[n])
+                        if include_error:
+                            error_msgs[tag] = self._opc.GetErrorString(
+                                errors[n])
                         n += 1
                     else:
                         status = 'Error'
 
-                    # OPC servers often include newline and carriage return characters
-                    # in their error message strings, so remove any found.
-                    if include_error:  error_msgs[tag] = error_msgs[tag].strip('\r\n')
+                    # OPC servers often include newline and carriage return
+                    # characters in their error message strings,
+                    # so remove any found.
+                    if include_error:
+                        error_msgs[tag] = error_msgs[tag].strip('\r\n')
 
                     if single:
                         if include_error:
@@ -846,7 +945,9 @@ class client():
     def write(self, tag_value_pairs, size=None, pause=0, include_error=False):
         """Write list of (tag, value) pair(s) to the server"""
 
-        if type(tag_value_pairs) in (list, tuple) and type(tag_value_pairs[0]) in (list, tuple):
+        if (
+                type(tag_value_pairs) in (list, tuple) and
+                type(tag_value_pairs[0]) in (list, tuple)):
             single = False
         else:
             single = True
@@ -883,14 +984,17 @@ class client():
                         sub_group = '%s.%d' % (group, i)
 
                         if sub_group in self._group_hooks:
-                            if self.trace: self.trace('CloseEvents(%s)' % sub_group)
+                            if self.trace:
+                                self.trace('CloseEvents(%s)' % sub_group)
                             self._group_hooks[sub_group].close()
 
                         try:
-                            if self.trace: self.trace('RemoveGroup(%s)' % sub_group)
+                            if self.trace:
+                                self.trace('RemoveGroup(%s)' % sub_group)
                             errors = opc_groups.Remove(sub_group)
                         except pythoncom.com_error as err:
-                            error_msg = 'RemoveGroup: %s' % self._get_error_str(err)
+                            error_msg = (
+                                'RemoveGroup: %s' % self._get_error_str(err))
                             raise OPCError(error_msg)
 
                         del(self._group_tags[sub_group])
@@ -912,7 +1016,9 @@ class client():
 
             tags, single_tag, valid = type_check(tags)
             if not valid:
-                raise TypeError("properties(): 'tags' parameter must be a string or a list of strings")
+                raise TypeError(
+                    "properties(): 'tags' parameter must be a string"
+                    " or a list of strings")
 
             try:
                 id.remove(0)
@@ -942,9 +1048,10 @@ class client():
                 if id == None:
                     descriptions = []
                     property_id = []
-                    count, property_id, descriptions, datatypes = self._opc.QueryAvailableProperties(tag)
+                    count, property_id, descriptions, datatypes = self._opc.QueryAvailableProperties(tag)  # noqa
 
-                    # Remove bogus negative property id (not sure why this sometimes happens)
+                    # Remove bogus negative property id
+                    # (not sure why this sometimes happens)
                     tag_properties = map(None, property_id, descriptions)
                     property_id = [p for p, d in tag_properties if p > 0]
                     descriptions = [d for p, d in tag_properties if p > 0]
@@ -952,10 +1059,13 @@ class client():
                 property_id.insert(0, 0)
                 values = []
                 errors = []
-                values, errors = self._opc.GetItemProperties(tag, len(property_id) - 1, property_id)
+                values, errors = self._opc.GetItemProperties(
+                    tag, len(property_id) - 1, property_id)
 
                 property_id.pop(0)
-                values = [str(v) if type(v) == pywintypes.TimeType else v for v in values]
+                values = [
+                    str(v) if type(v) == pywintypes.TimeType else v
+                    for v in values]
 
                 # Replace variant id with type strings
                 try:
@@ -987,11 +1097,15 @@ class client():
                     else:
                         tag_properties = map(None, property_id, values)
                 else:
-                    tag_properties = map(None, property_id, descriptions, values)
-                    tag_properties.insert(0, (0, 'Item ID (virtual property)', tag))
+                    tag_properties = map(
+                        None, property_id, descriptions, values)
+                    tag_properties.insert(
+                        0, (0, 'Item ID (virtual property)', tag))
 
                 if include_name:     tag_properties.insert(0, (0, tag))
-                if not single_tag:  tag_properties = [tuple([tag] + list(p)) for p in tag_properties]
+                if not single_tag:
+                    tag_properties = [
+                        tuple([tag] + list(p)) for p in tag_properties]
 
                 for p in tag_properties: yield p
 
@@ -1000,9 +1114,14 @@ class client():
             raise OPCError(error_msg)
 
     def properties(self, tags, id=None):
-        """Return list of property tuples (id, name, value) for the specified tag(s) """
+        """
+        Return list of property tuples (id, name, value)
+        for the specified tag(s)
+        """
 
-        if type(tags) not in (list, tuple) and type(id) not in (type(None), list, tuple):
+        if (
+                type(tags) not in (list, tuple) and
+                type(id) not in (type(None), list, tuple)):
             single = True
         else:
             single = False
@@ -1014,7 +1133,8 @@ class client():
         else:
             return list(props)
 
-    def ilist(self, paths='*', recursive=False, flat=False, include_type=False):
+    def ilist(
+            self, paths='*', recursive=False, flat=False, include_type=False):
         """Iterable version of list()"""
 
         try:
@@ -1029,7 +1149,9 @@ class client():
 
             paths, single, valid = type_check(paths)
             if not valid:
-                raise TypeError("list(): 'paths' parameter must be a string or a list of strings")
+                raise TypeError(
+                    "list(): 'paths' parameter must be a string or"
+                    " a list of strings")
 
             if len(paths) == 0: paths = ['*']
             nodes = {}
@@ -1041,9 +1163,11 @@ class client():
                     browser.Filter = ''
                     browser.ShowLeafs(True)
 
-                    pattern = re.compile('^%s$' % wild2regex(path), re.IGNORECASE)
+                    pattern = re.compile(
+                        '^%s$' % wild2regex(path), re.IGNORECASE)
                     matches = filter(pattern.search, browser)
-                    if include_type:  matches = [(x, node_type) for x in matches]
+                    if include_type:
+                        matches = [(x, node_type) for x in matches]
 
                     for node in matches: yield node
                     continue
@@ -1068,7 +1192,8 @@ class client():
                         if found_filter:
                             path_postfix += p + '/'
                         elif p.find('*') >= 0:
-                            pattern = re.compile('^%s$' % wild2regex(p), re.IGNORECASE)
+                            pattern = re.compile(
+                                '^%s$' % wild2regex(p), re.IGNORECASE)
                             found_filter = True
                         elif len(p) != 0:
                             pattern = re.compile('^.*$')
@@ -1081,13 +1206,15 @@ class client():
                                     path_str += p + '/'
                                 except:
                                     if i < len(path_list) - 1: return
-                                    pattern = re.compile('^%s$' % wild2regex(p), re.IGNORECASE)
+                                    pattern = re.compile(
+                                        '^%s$' % wild2regex(p), re.IGNORECASE)
 
-                            # Leaf node, so append all remaining path parts together
-                            # to form a single search expression
+                            # Leaf node, so append all remaining path parts
+                            # together to form a single search expression
                             else:
                                 p = string.join(path_list[i:], '.')
-                                pattern = re.compile('^%s$' % wild2regex(p), re.IGNORECASE)
+                                pattern = re.compile(
+                                    '^%s$' % wild2regex(p), re.IGNORECASE)
                                 break
 
                     browser.ShowBranches()
@@ -1105,8 +1232,12 @@ class client():
                     if not lowest_level and recursive:
                         queue += [path_str + x + path_postfix for x in matches]
                     else:
-                        if lowest_level:  matches = [exceptional(browser.GetItemID, x)(x) for x in matches]
-                        if include_type:  matches = [(x, node_type) for x in matches]
+                        if lowest_level:
+                            matches = [
+                                exceptional(
+                                    browser.GetItemID, x)(x) for x in matches]
+                        if include_type:
+                            matches = [(x, node_type) for x in matches]
                         for node in matches:
                             if not node in nodes: yield node
                             nodes[node] = True
@@ -1151,14 +1282,20 @@ class client():
             info_list += [('Protocol', mode)]
 
             if mode == 'OpenOPC':
-                info_list += [('Gateway Host', '%s:%s' % (self._open_host, self._open_port))]
+                info_list += [
+                    ('Gateway Host', '%s:%s' % (
+                        self._open_host, self._open_port))]
                 info_list += [('Gateway Version', '%s' % __version__)]
             info_list += [('Class', self.opc_class)]
             info_list += [('Client Name', self._opc.ClientName)]
             info_list += [('OPC Host', self.opc_host)]
             info_list += [('OPC Server', self._opc.ServerName)]
             info_list += [('State', OPC_STATUS[self._opc.ServerState])]
-            info_list += [('Version', '%d.%d (Build %d)' % (self._opc.MajorVersion, self._opc.MinorVersion, self._opc.BuildNumber))]
+            info_list += [
+                ('Version', '%d.%d (Build %d)' % (
+                    self._opc.MajorVersion,
+                    self._opc.MinorVersion,
+                    self._opc.BuildNumber))]
 
             try:
                 browser = self._opc.CreateBrowser()
@@ -1201,12 +1338,14 @@ class client():
             scode = exc[5]
 
             try:
-                opc_err_str = unicode(self._opc.GetErrorString(scode)).strip('\r\n')
+                opc_err_str = unicode(
+                    self._opc.GetErrorString(scode)).strip('\r\n')
             except:
                 opc_err_str = None
 
             try:
-                com_err_str = unicode(pythoncom.GetScodeString(scode)).strip('\r\n')
+                com_err_str = unicode(
+                    pythoncom.GetScodeString(scode)).strip('\r\n')
             except:
                 com_err_str = None
 
