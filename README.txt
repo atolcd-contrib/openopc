@@ -1,9 +1,11 @@
-OpenOPC for Python 1.2.0
+OpenOPC for Python 3.x
 Copyright (c) 2008-2012 by Barry Barnreiter (barry_b@users.sourceforge.net)
 Copyright (c) 2014 by Anton D. Kachalov (mouse@yandex.ru)
+Copyright (c) 2019 by Flavien PETITGUYOT (fpe@atolbedi.com)
 
 http://openopc.sourceforge.net/
 https://github.com/ya-mouse/openopc
+https://github.com/atolcd-contrib/openopc
 
 Post installation
 -----------------
@@ -18,7 +20,7 @@ going to the command prompt and entering:
 opc -q
 
 2. Set your prefered OPC server as the default by setting the system
-wide enviornment variable OPC_SERVER.  (On Windows you can do this
+wide enviornment variable OPC_SERVER. (On Windows you can do this
 by going to Control Panel > System > Advanced > Environment Variables)
 
 OPC_SERVER=Matrikon.OPC.Simulation
@@ -34,19 +36,19 @@ entering:
 opc -m open -i
 
 5. Test some of the other commands available using the OPC Command
-Line Client.  To get started, try entering the opc command without
+Line Client. To get started, try entering the opc command without
 any arguments in order to see the help page:
 
 opc
 
 To read an item from your OPC server, just include the item name as
-one of your arguments.  For example, if you're using Matrikon's
+one of your arguments. For example, if you're using Matrikon's
 Simulation server you could do:
 
 opc Random.Int4
 
 To read items from a specific OPC server you have installed,
-include the -s switch followed by the OPC server name.  For
+include the -s switch followed by the OPC server name. For
 example:
 
 opc -s Matrikon.OPC.Simulation Random.Int4
@@ -56,7 +58,7 @@ check the FAQ on http://openopc.sourceforge.net for additional help.
 
 If after reading through the FAQ you still require additional help,
 then the author of this package would be happy to assist you via
-e-mail.  Please see the project website for current contact
+e-mail. Please see the project website for current contact
 information.
 
 
@@ -78,7 +80,7 @@ which use the OpenOPC library:
 3. Pyro4
    https://github.com/irmen/Pyro4
 
-Of course, Python is necessary on all platforms.  However the other
+Of course, Python is necessary on all platforms. However the other
 packages may be optional depending on your configuration:
 
 1. Win32 platform, using the OpenOPC Gateway Service
@@ -97,7 +99,7 @@ Pywin32:  not applicable
 Pyro4:    required
 
 In order to get the most from the OpenOPC package, Windows developers
-are encouraged to install both Pywin32 and Pyro.  Using Pyro to talk to
+are encouraged to install both Pywin32 and Pyro. Using Pyro to talk to
 the Gateway Service provides a quick and easy method for bypassing the
 DCOM security nightmares which are all too common when using OPC.
 
@@ -106,7 +108,7 @@ Documentation
 -------------
 
 A PDF manual for OpenOPC is included in this installation inside the
-"doc" folder.   Users are encouraged to also look at the OpenOPC web
+"doc" folder. Users are encouraged to also look at the OpenOPC web
 site for additional usage examples that may not be contained in the
 manual.
 
