@@ -143,7 +143,7 @@ def exceptional(
                 return func(*args, **kwargs)
             except alt_exceptions:
                 return alt_return
-            except:
+            except BaseException:
                 if catch:
                     return catch(sys.exc_info(), lambda: func(*args, **kwargs))
                 raise
@@ -281,7 +281,7 @@ class client():
                             self._opc.ClientName = OPC_CLIENT
                     else:
                         self._opc.ClientName = self.client_name
-                except:
+                except BaseException:
                     pass
                 connected = True
                 break
@@ -352,7 +352,7 @@ class client():
 
             try:
                 errors = opc_items.Validate(len(names) - 1, names)
-            except:
+            except BaseException:
                 pass
 
             valid_tags = []
@@ -390,7 +390,7 @@ class client():
             try:
                 server_handles, errors = opc_items.AddItems(
                     len(client_handles) - 1, valid_tags, client_handles)
-            except:
+            except BaseException:
                 pass
 
             valid_tags_tmp = []
@@ -494,7 +494,7 @@ class client():
                         new_group = False
 
                     # New named group
-                    except:
+                    except BaseException:
                         try:
                             if self.trace:
                                 self.trace('AddGroup(%s)' % sub_group)
@@ -863,7 +863,7 @@ class client():
 
                 try:
                     errors = opc_items.Validate(len(names) - 1, names)
-                except:
+                except BaseException:
                     pass
 
                 n = 1
@@ -890,7 +890,7 @@ class client():
                 try:
                     server_handles, errors = opc_items.AddItems(
                         len(client_handles) - 1, valid_tags, client_handles)
-                except:
+                except BaseException:
                     pass
 
                 valid_tags_tmp = []
@@ -920,7 +920,7 @@ class client():
                         errors = opc_group.SyncWrite(
                             len(server_handles) - 1, server_handles,
                             valid_values)
-                    except:
+                    except BaseException:
                         pass
 
                 n = 0
@@ -1041,7 +1041,7 @@ class client():
             try:
                 id.remove(0)
                 include_name = True
-            except:
+            except BaseException:
                 include_name = False
 
             if id is not None:
@@ -1089,21 +1089,21 @@ class client():
                 try:
                     i = property_id.index(1)
                     values[i] = vt[values[i]]
-                except:
+                except BaseException:
                     pass
 
                 # Replace quality bits with quality strings
                 try:
                     i = property_id.index(3)
                     values[i] = quality_str(values[i])
-                except:
+                except BaseException:
                     pass
 
                 # Replace access rights bits with strings
                 try:
                     i = property_id.index(5)
                     values[i] = ACCESS_RIGHTS[values[i]]
-                except:
+                except BaseException:
                     pass
 
                 if id is not None:
@@ -1164,7 +1164,7 @@ class client():
             try:
                 browser = self._opc.CreateBrowser()
             # For OPC servers that don't support browsing
-            except:
+            except BaseException:
                 return
 
             paths, single, valid = type_check(paths)
@@ -1226,7 +1226,7 @@ class client():
                                 try:
                                     browser.MoveDown(p)
                                     path_str += p + '/'
-                                except:
+                                except BaseException:
                                     if i < len(path_list) - 1:
                                         return
                                     pattern = re.compile(
@@ -1324,7 +1324,7 @@ class client():
             try:
                 browser = self._opc.CreateBrowser()
                 browser_type = BROWSER_TYPE[browser.Organization]
-            except:
+            except BaseException:
                 browser_type = 'Not Supported'
 
             info_list += [('Browser', browser_type)]
@@ -1364,13 +1364,13 @@ class client():
             try:
                 opc_err_str = unicode(
                     self._opc.GetErrorString(scode)).strip('\r\n')
-            except:
+            except BaseException:
                 opc_err_str = None
 
             try:
                 com_err_str = unicode(
                     pythoncom.GetScodeString(scode)).strip('\r\n')
-            except:
+            except BaseException:
                 com_err_str = None
 
             # OPC error codes and COM error codes are overlapping concepts,
