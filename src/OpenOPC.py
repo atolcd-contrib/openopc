@@ -98,7 +98,7 @@ def type_check(tags):
 
     if type(tags) in (list, tuple):
         single = False
-    elif tags == None:
+    elif tags is None:
         tags = []
         single = False
     else:
@@ -199,7 +199,7 @@ class client():
 
         pythoncom.CoInitialize()
 
-        if opc_class == None:
+        if opc_class is None:
             if 'OPC_CLASS' in os.environ:
                 opc_class = os.environ['OPC_CLASS']
             else:
@@ -239,7 +239,7 @@ class client():
         self.cpu = None
 
     def set_trace(self, trace):
-        if self._open_serv == None:
+        if self._open_serv is None:
             self.trace = trace
 
     def connect(self, opc_server=None, opc_host='localhost'):
@@ -247,9 +247,9 @@ class client():
 
         pythoncom.CoInitialize()
 
-        if opc_server == None:
+        if opc_server is None:
             # Initial connect using environment vars
-            if self.opc_server == None:
+            if self.opc_server is None:
                 if 'OPC_SERVER' in os.environ:
                     opc_server = os.environ['OPC_SERVER']
                 else:
@@ -274,7 +274,7 @@ class client():
             else:
                 # Set client name since some OPC servers use it for security
                 try:
-                    if self.client_name == None:
+                    if self.client_name is None:
                         if 'OPC_CLIENT' in os.environ:
                             self._opc.ClientName = os.environ['OPC_CLIENT']
                         else:
@@ -359,7 +359,7 @@ class client():
             valid_values = []
             client_handles = []
 
-            if not sub_group in self._group_handles_tag:
+            if sub_group not in self._group_handles_tag:
                 self._group_handles_tag[sub_group] = {}
                 n = 0
             elif len(self._group_handles_tag[sub_group]) > 0:
@@ -397,7 +397,7 @@ class client():
             server_handles_tmp = []
             valid_tags.pop(0)
 
-            if not sub_group in self._group_server_handles:
+            if sub_group not in self._group_server_handles:
                 self._group_server_handles[sub_group] = {}
 
             for i, tag in enumerate(valid_tags):
@@ -473,7 +473,7 @@ class client():
                 opc_groups.DefaultGroupUpdateRate = update
 
                 # Anonymous group
-                if group == None:
+                if group is None:
                     try:
                         if self.trace:
                             self.trace('AddGroup()')
@@ -658,7 +658,7 @@ class client():
                         value = None
                         quality = 'Error'
                         timestamp = None
-                        if include_error and not tag in error_msgs:
+                        if include_error and tag not in error_msgs:
                             error_msgs[tag] = ''
 
                     if single:
@@ -674,7 +674,7 @@ class client():
                         else:
                             yield (tag, value, quality, timestamp)
 
-                if group == None:
+                if group is None:
                     try:
                         if not sync and opc_group.Name in self._group_hooks:
                             if self.trace:
@@ -754,7 +754,7 @@ class client():
                 value = SystemHealth.saw_wave()
 
             elif t == '@CpuUsage':
-                if self.cpu == None:
+                if self.cpu is None:
                     self.cpu = SystemHealth.CPU()
                     time.sleep(0.1)
                 value = self.cpu.get_usage()
@@ -777,7 +777,7 @@ class client():
                     image_name = m.group(1)
                     value = SystemHealth.task_exists(image_name)
 
-            if value == None:
+            if value is None:
                 quality = 'Error'
             else:
                 quality = 'Good'
@@ -810,7 +810,7 @@ class client():
                     "write(): 'tag_value_pairs' parameter must be a"
                     " (tag, value) tuple or a list of (tag,value) tuples")
 
-            if tag_value_pairs == None:
+            if tag_value_pairs is None:
                 tag_value_pairs = ['']
                 single = False
             elif type(tag_value_pairs[0]) in (str, bytes):
@@ -1044,7 +1044,7 @@ class client():
             except:
                 include_name = False
 
-            if id != None:
+            if id is not None:
                 descriptions = []
 
                 if isinstance(id, list) or isinstance(id, tuple):
@@ -1063,7 +1063,7 @@ class client():
 
             for tag in tags:
 
-                if id == None:
+                if id is None:
                     descriptions = []
                     property_id = []
                     count, property_id, descriptions, datatypes = self._opc.QueryAvailableProperties(tag)  # noqa
@@ -1106,7 +1106,7 @@ class client():
                 except:
                     pass
 
-                if id != None:
+                if id is not None:
                     if single_property:
                         if single_tag:
                             tag_properties = values
@@ -1262,7 +1262,7 @@ class client():
                         if include_type:
                             matches = [(x, node_type) for x in matches]
                         for node in matches:
-                            if not node in nodes:
+                            if node not in nodes:
                                 yield node
                             nodes[node] = True
 
@@ -1282,7 +1282,7 @@ class client():
         try:
             pythoncom.CoInitialize()
             servers = self._opc.GetOPCServers(opc_host)
-            servers = [s for s in servers if s != None]
+            servers = [s for s in servers if s is not None]
             return servers
 
         except pythoncom.com_error as err:
@@ -1356,7 +1356,7 @@ class client():
 
         hr, msg, exc, arg = err.args
 
-        if exc == None:
+        if exc is None:
             error_str = str(msg)
         else:
             scode = exc[5]
@@ -1376,13 +1376,13 @@ class client():
             # OPC error codes and COM error codes are overlapping concepts,
             # so we combine them together into a single error message.
 
-            if opc_err_str == None and com_err_str == None:
+            if opc_err_str is None and com_err_str is None:
                 error_str = str(scode)
             elif opc_err_str == com_err_str:
                 error_str = opc_err_str
-            elif opc_err_str == None:
+            elif opc_err_str is None:
                 error_str = com_err_str
-            elif com_err_str == None:
+            elif com_err_str is None:
                 error_str = opc_err_str
             else:
                 error_str = '%s (%s)' % (opc_err_str, com_err_str)
