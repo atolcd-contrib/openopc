@@ -114,7 +114,7 @@ def type_check(tags):
 
 def wild2regex(string):
     """Convert a Unix wildcard glob into a regular expression"""
-    return string.replace('.', '\.').replace(
+    return string.replace('.', r'\.').replace(
         '*', '.*').replace('?', '.').replace('!', '^')
 
 
@@ -759,17 +759,17 @@ class client():
             else:
                 value = None
 
-                m = re.match('@TaskMem\((.*?)\)', t)
+                m = re.match(r'@TaskMem\((.*?)\)', t)
                 if m:
                     image_name = m.group(1)
                     value = SystemHealth.task_mem(image_name)
 
-                m = re.match('@TaskCpu\((.*?)\)', t)
+                m = re.match(r'@TaskCpu\((.*?)\)', t)
                 if m:
                     image_name = m.group(1)
                     value = SystemHealth.task_cpu(image_name)
 
-                m = re.match('@TaskExists\((.*?)\)', t)
+                m = re.match(r'@TaskExists\((.*?)\)', t)
                 if m:
                     image_name = m.group(1)
                     value = SystemHealth.task_exists(image_name)
