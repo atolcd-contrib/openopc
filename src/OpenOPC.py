@@ -5,6 +5,7 @@
 # Copyright (c) 2007-2012 Barry Barnreiter (barry_b@users.sourceforge.net)
 # Copyright (c) 2014 Anton D. Kachalov (mouse@yandex.ru)
 # Copyright (c) 2017 José A. Maita (jose.a.maita@gmail.com)
+# Copyright (c) 2018 by Florian MAILLOT (fma@atolcd.com)
 # Copyright (c) 2019 by Flavien PETITGUYOT (fpe@atolbedi.com)
 #
 ###########################################################################
@@ -337,7 +338,7 @@ class client():
     def iread(
             self, tags=None, group=None, size=None, pause=0,
             source='hybrid', update=-1, timeout=5000, sync=False,
-            include_error=False, rebuild=False):
+            include_error=False, rebuild=False, has_timestamp=True):
         """Iterable version of read()"""
 
         def add_items(tags):
@@ -660,16 +661,29 @@ class client():
 
                     if single:
                         if include_error:
-                            yield (value, quality, timestamp, error_msgs[tag])
+                            if has_timestamp:
+                                yield (
+                                    value, quality, timestamp, error_msgs[tag])
+                            else:
+                                yield (value, quality, error_msgs[tag])
                         else:
-                            yield (value, quality, timestamp)
+                            if has_timestamp:
+                                yield (value, quality, timestamp)
+                            else:
+                                yield (value, quality)
                     else:
                         if include_error:
-                            yield (
-                                tag, value, quality, timestamp,
-                                error_msgs[tag])
+                            if has_timestamp:
+                                yield (
+                                    tag, value, quality, timestamp,
+                                    error_msgs[tag])
+                            else:
+                                yield (tag, value, quality, error_msgs[tag])
                         else:
-                            yield (tag, value, quality, timestamp)
+                            if has_timestamp:
+                                yield (tag, value, quality, timestamp)
+                            else:
+                                yield (tag, value, quality)
 
                 if group is None:
                     try:
@@ -694,7 +708,7 @@ class client():
     def read(
             self, tags=None, group=None, size=None, pause=0,
             source='hybrid', update=-1, timeout=5000, sync=False,
-            include_error=False, rebuild=False):
+            include_error=False, rebuild=False, has_timestamp=True):
         """
         Return list of (value, quality, time) tuples
         for the specified tag(s)
@@ -718,7 +732,7 @@ class client():
         else:
             results = self.iread(
                 tags, group, size, pause, source, update, timeout, sync,
-                include_error, rebuild)
+                include_error, rebuild, has_timestamp)
 
         if single:
             return list(results)[0]
